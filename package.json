@@ -2,14 +2,16 @@
   "name": "mcp-send-email",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/index.js",
+  "main": "index.ts",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.js",
-    "dev": "npm run build && nodemon dist/index.js",
-    "dev:watch": "tsc --watch & nodemon dist/index.js",
+    "start": "node dist/http-wrapper.js",
+    "start:mcp": "node dist/index.js",
+    "dev": "npm run build && nodemon dist/http-wrapper.js",
+    "dev:watch": "tsc --watch & nodemon dist/http-wrapper.js",
     "test": "npm run build && node dist/index.js",
-    "mcp-only": "MCP_ONLY=true npm run build && node dist/index.js"
+    "mcp-only": "MCP_ONLY=true npm run start:mcp",
+    "postinstall": "npm run build"
   },
   "keywords": [],
   "author": "",
