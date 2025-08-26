@@ -95,11 +95,18 @@ app.post('/send-email', (req, res) => __awaiter(void 0, void 0, void 0, function
 }));
 // Start HTTP server for testing
 const PORT = process.env.PORT || 3000;
-if (process.env.MCP_ONLY !== 'true') {
+// Only start HTTP server if MCP_ONLY is not set to 'true'
+const isMcpOnly = process.env.MCP_ONLY === 'true';
+console.log('MCP_ONLY environment variable:', process.env.MCP_ONLY);
+console.log('Is MCP Only mode:', isMcpOnly);
+if (!isMcpOnly) {
     app.listen(PORT, () => {
         console.log(`HTTP server running on port ${PORT}`);
         console.log(`Test endpoint: POST http://localhost:${PORT}/send-email`);
     });
+}
+else {
+    console.log('HTTP server disabled (MCP_ONLY mode)');
 }
 // Start the MCP server
 function main() {
