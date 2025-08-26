@@ -1,7 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
-import express from 'express';
 import { sendEmail } from './emailService';
 
 // Initialize the MCP Server
@@ -42,78 +41,6 @@ server.tool(
   }
 );
 
-// HTTP Server for testing with Postman
-const app = express();
-app.use(express.json());
-
-// Send email endpoint for Postman testing
-app.post('/send-email', async (req, res) => {
-  try {
-    const { to, subject, text, html } = req.body;
-
-    // Validate input using the same Zod schema as MCP tool
-    const schema = z.object({
-      to: z.string().email('Invalid email address'),
-      subject: z.string().min(1, 'Subject is required'),
-      text: z.string().min(1, 'Text content is required'),
-      html: z.string().optional(),
-    });
-
-    const validated = schema.parse({ to, subject, text, html });
-    console.log('Received HTTP request:', validated);
-
-    // Call the same function as the MCP tool
-    const result = await sendEmail(
-      validated.to,
-      validated.subject,
-      validated.text
-    );
-
-    res.json({
-      success: true,
-      message: `Email sent successfully to ${validated.to}`,
-      result,
-    });
-  } catch (error) {
-    console.error('HTTP endpoint error:', error);
-
-    // Handle Zod validation errors
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({
-        success: false,
-        error: 'Validation error',
-        details: error.errors.map((err) => ({
-          field: err.path.join('.'),
-          message: err.message,
-        })),
-      });
-    }
-
-    // Handle other errors
-    res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error occurred',
-    });
-  }
-});
-
-// Start HTTP server for testing
-const PORT = process.env.PORT || 3000;
-
-// Only start HTTP server if MCP_ONLY is not set to 'true'
-const isMcpOnly = process.env.MCP_ONLY === 'true';
-console.log('MCP_ONLY environment variable:', process.env.MCP_ONLY);
-console.log('Is MCP Only mode:', isMcpOnly);
-
-if (!isMcpOnly) {
-  app.listen(PORT, () => {
-    console.log(`HTTP server running on port ${PORT}`);
-    console.log(`Test endpoint: POST http://localhost:${PORT}/send-email`);
-  });
-} else {
-  console.log('HTTP server disabled (MCP_ONLY mode)');
-}
-
 // Start the MCP server
 async function main() {
   try {
@@ -128,7 +55,6 @@ async function main() {
   }
 }
 
-// Start the server
 main().catch((error) => {
   console.error('Fatal error in main():', error);
   process.exit(1);
